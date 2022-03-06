@@ -14,10 +14,13 @@ import nltk
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 
+from src.CustomPortugueseLemmatizer import CustomPortugueseLemmatizer
+
 # Program
 class App():
     def __init__(self):
         # Show logo, title and description
+        self.show_logo()
         self.show_description()
         self.get_text()
         self.load_spacy()
@@ -25,6 +28,7 @@ class App():
         self.get_operation()
         self.apply_operation()
         self.load_pipeline()
+        self.predict_level()
 
     class CustomPortugueseLemmatizer():
         """Canonicalize a dataset by applying lemmatization to texts
@@ -90,6 +94,10 @@ class App():
         
         def fit_transform(self, raw_documents, y=None):
             return self.fit(raw_documents, y).transform(raw_documents)
+
+    @staticmethod
+    def show_logo():
+        st.sidebar.image('logo.png')
 
     @staticmethod
     def show_description():
@@ -203,16 +211,27 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
             st.write(f'_{self.text}_')
 
     def load_pipeline(self):
-        from sklearn.pipeline import Pipeline
-        from sklearn.feature_extraction.text import CountVectorizer
-        from sklearn.feature_extraction.text import TfidfTransformer
+        path = 'pickle'
+        if os.path.isdir(path):
+            # Read the classifier from pickle
+            with open(f'{path}/pipeline_{self.code}.pickle', 'rb') as file:
+                self.pipe = pickle.load(file)
 
-        lem = self.CustomPortugueseLemmatizer(self.spacy_nlp)
-        self.pipe = Pipeline([('lemmatizer', lem), 
-            ('vectorizer', CountVectorizer()),
-            ('tfidf', TfidfTransformer()),
-            ('clf', self.clf), 
-        ])
+    def predict_level(self):
+        if not self.text:
+            return
+        X_test = [self.text]
+        y_pred = self.pipe.predict(X_test)
+        st.write('### Seu nível de escrita classificado é: ')
+        predicted_level = int(y_pred[0])
+        if predicted_level == 1:
+            st.write('Ensino Fundamental I')
+        elif predicted_level == 2:
+            st.write('Ensino Fundamental II')
+        elif predicted_level == 3:
+            st.write('Ensino Médio')
+        else:
+            st.write('Ensino Superior')
 
     @staticmethod
     def copyright_note():

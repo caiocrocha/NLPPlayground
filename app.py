@@ -10,6 +10,9 @@ import spacy
 import pickle
 import os
 
+import nltk
+nltk.download('wordnet')
+
 # Program
 class App():
     def __init__(self):

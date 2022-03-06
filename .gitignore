@@ -2,5 +2,4 @@
 dataset_caed/
 __MACOSX/
 dataset.csv
-pickle/
 __pycache__

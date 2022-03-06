@@ -4,6 +4,7 @@
 
 import streamlit as st
 import random
+import numpy as np
 import spacy
 
 import pickle

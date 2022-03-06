@@ -97,8 +97,9 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
 ''')
 
     def get_text(self):
-        self.text = st.text_area('Escreva um texto e aperte Ctrl+Enter para enviar.')
-        self.original_text = self.text
+        text = st.text_area('Escreva um texto e aperte Ctrl+Enter para enviar.')
+        self.original_text = text
+        self.text = text
 
     def load_spacy(self):
         self.spacy_nlp = spacy.load("pt_core_news_sm")
@@ -167,21 +168,23 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
         return sentence
     
     def apply_operation(self):
+        if not self.original_text:
+            return
         if self.operation == 'Troca de palavras':
             st.write('### Troca de palavras')
             stop_words = self.spacy_nlp.Defaults.stop_words
             percent = st.sidebar.slider("% de palavras trocadas", 0.0, 1.0, value=0.5)
             num_change = int(percent * len(self.original_text))
             self.text = self.synonym_replacement(self.original_text, stop_words, num_change)
-            st.write('#**Texto após a troca de palavras**')
+            st.write('**Texto após a troca de palavras**')
             st.write(f'_{self.text}_')
 
         elif self.operation == 'Troca de gênero':
             return
         
-        else:
+        elif self.operation == 'Paráfrase':
             from deep_translator import GoogleTranslator
-
+            
             st.write('### Paráfrase')
             st.write('Alteração da escrita por meio da tradução reversa com a API do Google Tradutor')
             translated = GoogleTranslator(source='pt', target='en').translate(self.original_text)
@@ -190,6 +193,9 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
             st.write('**Texto em inglês**')
             st.write(f'_{translated}_')
             st.write('**Texto traduzido de volta ao português**')
+            st.write(f'_{self.text}_')
+        else:
+            st.write('**Texto escrito**')
             st.write(f'_{self.text}_')
 
     def load_pipeline(self):

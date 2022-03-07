@@ -31,7 +31,7 @@ def strip_html_tags(text):
     
     arguments:
         input_text: "text" of type "String". 
-                    
+    
     return:
         value: "text" after removal of html tags.
         
@@ -155,7 +155,7 @@ def preprocessing(text):
     Pre-process the dataset so that it can be used for NLP.
     Python differentiates lower case and upper case, so it is
     necessary to transform all the text to lower case, so that
-    "The" and "the" are counted as the same word in the NLP. 
+    "The" and "the" are counted as the same word in NLP. 
     """
     string = lower_casing_text(text)
     return string

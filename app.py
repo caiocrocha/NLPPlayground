@@ -30,71 +30,6 @@ class App():
         self.load_pipeline()
         self.predict_level()
 
-    class CustomPortugueseLemmatizer():
-        """Canonicalize a dataset by applying lemmatization to texts
-        in the portuguese language with Spacy's "pt_core_news_sm" module
-        """
-        def __init__(self, spacy_nlp):
-            self.spacy_nlp = spacy_nlp
-        
-        # Returns True if the word is in CV (consonant-vowel) format or False if it is not
-        def is_canonical(self, word):
-            canonical = True
-            seq = iter(word)
-
-            for c in seq:
-                if c not in 'bcdfghjklmnpqrstvwxyzç':
-                    canonical = False
-                    break
-                else:
-                    try:
-                        n = next(seq)
-                    except StopIteration as e:
-                        canonical = False
-                        break
-                    if n not in 'aeiouáàãâéêíóõôúü':
-                        canonical = False
-                        break
-            return canonical
-        
-        def remove_case(self, token):
-            return (
-                token.is_stop 
-                or any(c.isdigit() for c in token.text) 
-                or token.pos_ == 'PUNCT' 
-                or token.pos_ == 'NUM' 
-                or token.pos_ == 'SPACE' 
-                or token.pos_ == 'SYM' 
-                or token.pos_ == 'X'
-                )
-        
-        def fit(self, raw_documents, y=None):
-            return self
-        
-        def transform(self, raw_documents):
-            X = []
-            for text in raw_documents:
-                word_list = []
-                cv_list = []
-                for token in self.nlp(text):
-                    # only append useful words, excluding stop words, numbers, 
-                    # spaces, punctuations, symbols and unknown characters
-                    if not self.remove_case(token): 
-                        word = token.lemma_.lower()
-                        word_list.append(word)
-                        # assign if word is in CV (consonant-vowel) format or if it is not defined
-                        # word = word + '_cv' if is_canonical(word) else word + '_nd'
-                        cv_list.append('is_cv' if self.is_canonical(word) else 'not_cv')
-
-                sentence = ' '.join(word_list)
-                sentence += ' '
-                sentence += ' '.join(cv_list)
-                X.append(sentence)
-            return X
-        
-        def fit_transform(self, raw_documents, y=None):
-            return self.fit(raw_documents, y).transform(raw_documents)
-
     @staticmethod
     def show_logo():
         st.sidebar.image('logo.png')
@@ -179,6 +114,96 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
 
         return sentence
     
+    def swap_gender(self, text):
+        # map of pronouns
+        gen_map = {
+            'ele': 'ela', 
+            'ela': 'ele', 
+            'eles': 'elas', 
+            'elas': 'eles', 
+            'meu': 'minha', 
+            'minha': 'meu', 
+            'meus': 'minhas', 
+            'minhas': 'meus', 
+            'teu': 'tua', 
+            'tua': 'teu', 
+            'teus': 'tuas', 
+            'tuas': 'teus', 
+            'seu': 'sua', 
+            'sua': 'seu', 
+            'seus': 'suas', 
+            'suas': 'seus', 
+            'este': 'esta', 
+            'esta': 'este', 
+            'estes': 'estas', 
+            'estas': 'estes', 
+            'esse': 'essa', 
+            'essa': 'esse', 
+            'esses': 'essas', 
+            'essas': 'esses', 
+            'aquele': 'aquela', 
+            'aquela': 'aquele', 
+            'aqueles': 'aquelas', 
+            'aquelas': 'aqueles', 
+            'àquele': 'àquela', 
+            'àquela': 'àquele', 
+            'àqueles': 'àquelas', 
+            'àquelas': 'àqueles', 
+            'mesmo': 'mesma', 
+            'mesma': 'mesmo', 
+            'mesmos': 'mesmas', 
+            'mesmas': 'mesmos', 
+            'próprio': 'própria', 
+            'própria': 'próprio', 
+            'próprios': 'próprias', 
+            'próprias': 'próprios', 
+            'todo': 'toda', 
+            'toda': 'todo', 
+            'todos': 'todas', 
+            'todas': 'todos', 
+            'algum': 'alguma', 
+            'alguma': 'algum', 
+            'alguns': 'algumas', 
+            'algumas': 'alguns', 
+            'um': 'uma', 
+            'uma': 'um', 
+            'uns': 'umas', 
+            'umas': 'uns', 
+            'certo': 'certa', 
+            'certa': 'certo', 
+            'certos': 'certas', 
+            'certas': 'certos', 
+            'vários': 'várias', 
+            'várias': 'vários', 
+            'muito': 'muita', 
+            'muita': 'muito', 
+            'muitos': 'muitas', 
+            'muitas': 'muitos', 
+            'quanto': 'quanta', 
+            'quanta': 'quanto', 
+            'quantos': 'quantas', 
+            'quantas': 'quantos', 
+            'tanto': 'tanta', 
+            'tanta': 'tanto', 
+            'tantos': 'tantas', 
+            'tantas': 'tantos', 
+            'outro': 'outra', 
+            'outra': 'outro', 
+            'outros': 'outras', 
+            'outras': 'outros', 
+        }
+        
+        word_list = []
+
+        for token in self.spacy_nlp(text):
+            word = token.text
+            if word in gen_map.keys():
+                word = gen_map[word]
+            word_list.append(word)
+            
+        sentence = ' '.join(word_list)
+        return sentence
+
     def apply_operation(self):
         if not self.original_text:
             return
@@ -192,7 +217,11 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
             st.write(f'_{self.text}_')
 
         elif self.operation == 'Troca de gênero':
-            return
+            st.write('### Troca de gênero')
+            st.warning('No momento, somente são trocados pronomes!')
+            self.text = self.swap_gender(self.original_text)
+            st.write('**Texto após a troca de gênero**')
+            st.write(f'_{self.text}_')
         
         elif self.operation == 'Paráfrase':
             from deep_translator import GoogleTranslator

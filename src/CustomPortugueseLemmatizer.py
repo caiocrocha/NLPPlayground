@@ -4,7 +4,7 @@ class CustomPortugueseLemmatizer():
     """
     def __init__(self):
         import spacy
-        self.nlp = spacy.load("pt_core_news_sm")
+        self.spacy_nlp = spacy.load("pt_core_news_sm")
     
     # Returns True if the word is in CV (consonant-vowel) format or False if it is not
     def is_canonical(self, word):
@@ -45,7 +45,7 @@ class CustomPortugueseLemmatizer():
         for text in raw_documents:
             word_list = []
             cv_list = []
-            for token in self.nlp(text):
+            for token in self.spacy_nlp(text):
                 # only append useful words, excluding stop words, numbers, 
                 # spaces, punctuations, symbols and unknown characters
                 if not self.remove_case(token): 

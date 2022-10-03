@@ -4,6 +4,7 @@
 # Code adapted from https://towardsdatascience.com/cleaning-preprocessing-text-data-by-building-nlp-pipeline-853148add68a
 import os
 import pandas as pd
+import sys
 
 def remove_newlines_tabs(text):
     """
@@ -161,13 +162,22 @@ def preprocessing(text):
     return string
 
 def main():
-    # Parse through directories and read the files
+    """
+    Walk through child directories of a top directory 
+    and process the plain text files, 
+    generating a clean csv dataset.
+
+    arguments:
+        dataset_dir: run from the cmd line `python3 dataset_to_csv.py dataset/`
+    """
+
+    dataset_dir = sys.argv[1]
     texts = []
-    for root, directories, files in os.walk('dataset_caed'):
+    for root, directories, files in os.walk(dataset_dir):
         for d in directories:
-            for _, _, files2 in os.walk(f'dataset_caed/{d}'):
+            for _, _, files2 in os.walk(f'{dataset_dir}/{d}'):
                 for f in files2:
-                    with open(f'dataset_caed/{d}/{f}') as text_file:
+                    with open(f'{dataset_dir}/{d}/{f}') as text_file:
                         text = ''
                         for line in text_file.readlines():
                             text_clean = cleaning(line)

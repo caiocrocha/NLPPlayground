@@ -21,6 +21,8 @@ class App():
     def __init__(self):
         # Show logo, title and description
         self.show_logo()
+        st.markdown('''## **NLP Playground**''')
+        self.language = self.select_language()
         self.show_description()
         self.get_text()
         self.load_spacy()
@@ -35,16 +37,30 @@ class App():
         st.sidebar.image('logo.png')
 
     @staticmethod
+    def select_language():
+        return st.selectbox('Language', ('Português', 'English'))
+
+    @staticmethod
     def show_description():
-        st.markdown('''## **PlayGround de NLP**
-# Como está a minha escrita?
+        st.divider()
+        if self.language == 'Português':
+            st.markdown('''# Como está a minha escrita?
 ## Um classificador automático do nível de escrita de um texto
 Escreva um pequeno texto (0 a 500 palavras) sobre um assunto específico e descubra se seu perfil de escrita se encaixa nos níveis do Ensino Fundamental I, Ensino Fundamental II, Ensino Médio ou Ensino Superior.
 Você também pode descobrir como operações de NLP (Natural Language Processing) podem influenciar na classificação, por meio dos controles na barra lateral!
 ''')
+        else:
+            st.markdown('''# How is my writing?
+## An automatic classifier of the writing level of a text
+Write a short text (0 to 500 words) in Portuguese on a specific topic and find out if your writing profile fits the levels of Elementary School I, Elementary School II, High School or Higher Education.
+You can also find out how NLP (Natural Language Processing) operations can influence the classification, through the controls in the sidebar!
+''')
 
     def get_text(self):
-        text = st.text_area('Escreva um texto e aperte Ctrl+Enter para enviar.')
+        if self.language == 'Português':
+            text = st.text_area('Escreva um texto e aperte Ctrl+Enter para enviar.')
+        else:
+            text = st.text_area('Write a text and press Ctrl+Enter to send.')
         self.original_text = text
         self.text = text
 
@@ -63,11 +79,16 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
             from sklearn.svm import LinearSVC
             self.clf = LinearSVC(C=1.0, random_state=21)
             self.code = 'SVC'
-    
+
     def get_operation(self):
-        operations = ['Nenhuma', 'Troca de palavras', 'Troca de gênero', 'Paráfrase']
-        self.operation = st.sidebar.selectbox(label="Operação", options=operations)
-    
+        if self.language == 'Português':
+            operations = ['Nenhuma', 'Troca de palavras', 'Troca de gênero', 'Paráfrase']
+            label = 'Operação'
+        else:
+            operations = ['None', 'Word swap', 'Gender swap', 'Paraphrase']
+            label = 'Operation'
+        self.operation = st.sidebar.selectbox(label=label, options=operations)
+
     @staticmethod
     def get_synonyms(word):
         """
@@ -207,36 +228,54 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
     def apply_operation(self):
         if not self.original_text:
             return
-        if self.operation == 'Troca de palavras':
-            st.write('### Troca de palavras')
+        st.write(f'### {self.operation}')
+        if self.operation == 'Troca de palavras' or self.operation == 'Word swap':
             stop_words = self.spacy_nlp.Defaults.stop_words
-            percent = st.sidebar.slider("% de palavras trocadas", 0.0, 1.0, value=0.5)
+            if self.language == 'Português':
+                slider_label = '% de palavras trocadas'
+                label = 'Texto após a troca de palavras'
+            else:
+                slider_label = '% of words that will be swapped'
+                label = 'Text after swapping words'
+            percent = st.sidebar.slider(label, 0.0, 1.0, value=0.5)
             num_change = int(percent * len(self.original_text))
             self.text = self.synonym_replacement(self.original_text, stop_words, num_change)
-            st.write('**Texto após a troca de palavras**')
+            st.write(f'**{label}**')
             st.write(f'_{self.text}_')
-
-        elif self.operation == 'Troca de gênero':
-            st.write('### Troca de gênero')
-            st.warning('No momento, somente são trocados pronomes!')
+        elif self.operation == 'Troca de gênero' or self.operation == 'Gender swap':
+            if self.language == 'Português':
+                st.warning('No momento, somente são trocados pronomes!')
+                label = 'Texto após a troca de gênero'
+            else:
+                st.warning('At the moment, only pronouns are exchanged!')
+                label = 'Text after swapping gender'
             self.text = self.swap_gender(self.original_text)
-            st.write('**Texto após a troca de gênero**')
+            st.write(f'**{label}**')
             st.write(f'_{self.text}_')
         
         elif self.operation == 'Paráfrase':
             from deep_translator import GoogleTranslator
             
-            st.write('### Paráfrase')
-            st.write('Alteração da escrita por meio da tradução reversa com a API do Google Tradutor')
+            if language == 'Português':
+                st.write('Alteração da escrita por meio da tradução reversa com a API do Google Tradutor')
+                label1 = 'Texto em inglês'
+                label2 = 'Texto traduzido de volta ao português'
+            else:
+                st.write('Change of writing through reverse translation with Google Translate API')
+                label1 = 'Text in English'
+                label2 = 'Text translated back into Portuguese'
             translated = GoogleTranslator(source='pt', target='en').translate(self.original_text)
             back_translated = GoogleTranslator(source='en', target='pt').translate(translated)
             self.text = back_translated
-            st.write('**Texto em inglês**')
+            st.write(f'**{label1}**')
             st.write(f'_{translated}_')
-            st.write('**Texto traduzido de volta ao português**')
+            st.write(f'**{label2}**')
             st.write(f'_{self.text}_')
         else:
-            st.write('**Texto escrito**')
+            if language == 'Português':
+                st.write('**Texto escrito**')
+            else:
+                st.write('**Written text**')
             st.write(f'_{self.text}_')
 
     def load_pipeline(self):
@@ -251,21 +290,35 @@ Você também pode descobrir como operações de NLP (Natural Language Processin
             return
         X_test = [self.text]
         y_pred = self.pipe.predict(X_test)
-        st.write('### Seu nível de escrita classificado é: ')
         predicted_level = int(y_pred[0])
-        if predicted_level == 1:
-            st.write('Ensino Fundamental I')
-        elif predicted_level == 2:
-            st.write('Ensino Fundamental II')
-        elif predicted_level == 3:
-            st.write('Ensino Médio')
+        if language == 'Português':
+            st.write('### Seu nível de escrita classificado é: ')
+            if predicted_level == 1:
+                st.write('Ensino Fundamental I')
+            elif predicted_level == 2:
+                st.write('Ensino Fundamental II')
+            elif predicted_level == 3:
+                st.write('Ensino Médio')
+            else:
+                st.write('Ensino Superior')
         else:
-            st.write('Ensino Superior')
+            st.write('### Your graded writing level is: ')
+            if predicted_level == 1:
+                st.write('Elementary School I')
+            elif predicted_level == 2:
+                st.write('Elementary School II')
+            elif predicted_level == 3:
+                st.write('High School')
+            else:
+                st.write('Higher Education')
 
     @staticmethod
     def copyright_note():
-        st.markdown('----------------------------------------------------')
-        st.markdown('Criado por Caio Cedrola Rocha, 2022.')
+        st.divider('')
+        if language == 'Português':
+            st.markdown('Criado por Caio Cedrola Rocha, 2022.')
+        else:
+            st.markdown('Created by Caio Cedrola Rocha, 2022.')
 
 def main():
     # Create App

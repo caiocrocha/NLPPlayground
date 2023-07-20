@@ -40,8 +40,7 @@ class App():
     def select_language():
         return st.selectbox('Language', ('Português', 'English'))
 
-    @staticmethod
-    def show_description():
+    def show_description(self):
         st.markdown('----------------------------------------------------')
         if self.language == 'Português':
             st.markdown('''# Como está a minha escrita?
@@ -256,7 +255,7 @@ You can also find out how NLP (Natural Language Processing) operations can influ
         elif self.operation == 'Paráfrase':
             from deep_translator import GoogleTranslator
             
-            if language == 'Português':
+            if self.language == 'Português':
                 st.write('Alteração da escrita por meio da tradução reversa com a API do Google Tradutor')
                 label1 = 'Texto em inglês'
                 label2 = 'Texto traduzido de volta ao português'
@@ -272,7 +271,7 @@ You can also find out how NLP (Natural Language Processing) operations can influ
             st.write(f'**{label2}**')
             st.write(f'_{self.text}_')
         else:
-            if language == 'Português':
+            if self.language == 'Português':
                 st.write('**Texto escrito**')
             else:
                 st.write('**Written text**')
@@ -291,7 +290,7 @@ You can also find out how NLP (Natural Language Processing) operations can influ
         X_test = [self.text]
         y_pred = self.pipe.predict(X_test)
         predicted_level = int(y_pred[0])
-        if language == 'Português':
+        if self.language == 'Português':
             st.write('### Seu nível de escrita classificado é: ')
             if predicted_level == 1:
                 st.write('Ensino Fundamental I')
@@ -312,10 +311,9 @@ You can also find out how NLP (Natural Language Processing) operations can influ
             else:
                 st.write('Higher Education')
 
-    @staticmethod
-    def copyright_note():
+    def copyright_note(self):
         st.markdown('----------------------------------------------------')
-        if language == 'Português':
+        if self.language == 'Português':
             st.markdown('Criado por Caio Cedrola Rocha, 2022.')
         else:
             st.markdown('Created by Caio Cedrola Rocha, 2022.')

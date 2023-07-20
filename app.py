@@ -42,7 +42,7 @@ class App():
 
     @staticmethod
     def show_description():
-        st.divider()
+        st.markdown('----------------------------------------------------')
         if self.language == 'Português':
             st.markdown('''# Como está a minha escrita?
 ## Um classificador automático do nível de escrita de um texto
@@ -314,7 +314,7 @@ You can also find out how NLP (Natural Language Processing) operations can influ
 
     @staticmethod
     def copyright_note():
-        st.divider('')
+        st.markdown('----------------------------------------------------')
         if language == 'Português':
             st.markdown('Criado por Caio Cedrola Rocha, 2022.')
         else:

@@ -38,7 +38,7 @@ class App():
 
     @staticmethod
     def select_language():
-        return st.selectbox('Language', ('Português', 'English'))
+        return st.selectbox('Language', ('English', 'Português'))
 
     def show_description(self):
         st.markdown('----------------------------------------------------')
@@ -68,7 +68,11 @@ You can also find out how NLP (Natural Language Processing) operations can influ
 
     def get_classifier(self):
         models = ['Naive Bayes (NB)', 'Support Vector Classifier (SVC)']
-        name = st.sidebar.selectbox(label="Classificador", options=models)
+        if self.language == 'Português':
+            label = "Classificador"
+        else:
+            label = "Classifier"
+        name = st.sidebar.selectbox(label=label, options=models)
 
         if name == 'Naive Bayes (NB)':
             from sklearn.naive_bayes import MultinomialNB
